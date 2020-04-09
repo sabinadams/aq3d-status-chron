@@ -16,12 +16,17 @@ export const scheduledFunction = functions.pubsub.schedule('every 1 mins').onRun
     // Grab server data
     const response = await apiClient.get('/')
 
+    // Format response
+    const rawData = { ...response.data }
+    const serverList:any = { servers: [] }
+    Object.keys( rawData ).forEach( key => serverList.servers.push(rawData[key]))
+
     // Add the current snapshot to the DB
     await admin
         .firestore()
         .collection( 'server-snapshots' )
         .doc( 'current-status' )
-        .set({ ...response.data })
+        .set(serverList)
         .then( ref => console.log(`Took a server status snapshot on ${new Date()}`) )
 
     return null
